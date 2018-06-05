@@ -1,7 +1,5 @@
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Robot;
-import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -12,24 +10,22 @@ public class AutoClicker {
 	enum xy {x,y};
 	static Color c1, c2, c3;
 	static int TR = -15265269, BR = -14412786, BL = -10011369;
-	static int startX = 984, gapRightX = 275, CntlTRX = 1120, cardX = 481,
-			CntlBRX = CntlTRX, cntlBLX = 560, playX = 1225, GerroshX = 416, HeroDiffX = 219;
+	static int startX = 890, gapRightX = 310, CntlTRX = 1120, cardX = 240,
+			CntlBRX = CntlTRX, cntlBLX = 560, playX = 1150, GerroshX = 250, HeroDiffX = 219;
 	static int startY = 830, CntlTRY = 360, cardY = 450,
 			CntlBRY = 720, CntlBLY = CntlBRY, playY = 900, GerroshY = 275, HeroDiffY = 237;
-	static int[] sizes = new int[4]; //left top right bottom
-	static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	static int[] sizes = new int[4]; //left top right bottom, topright is (0,0).
 	
 	//Yes, main should never ever throw Exception. No, I don't care enough to fix it atm.
 	public static void main(String[] args) throws Exception {
 
-		String line;
-		String pidInfo ="";
+		String line = "", pidInfo ="";
 		Robot BeepBoop = new Robot();
 
 		int counter = 0;
 
 		Scanner sc = new Scanner(System.in);
-
+		
 		Process process = Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
 
 		BufferedReader input =  new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -153,6 +149,7 @@ public class AutoClicker {
 	}
 
 	public static int[] FindScreenSize() throws Exception {
+		//TODO replace this with reading from the option.txt file, where everything useful is stored.
 		GetWindowRect GWR = new GetWindowRect();
 		return GWR.go("Hearthstone");
 	}
