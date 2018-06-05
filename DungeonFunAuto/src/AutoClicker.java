@@ -14,8 +14,8 @@ public class AutoClicker {
 	static int TR = -15265269, BR = -14412786, BL = -10011369;
 	static int startX = 984, gapRightX = 275, CntlTRX = 1120, cardX = 481,
 			CntlBRX = CntlTRX, cntlBLX = 560, playX = 1225, GerroshX = 416, HeroDiffX = 219;
-	static int startY, gapRightY, gapDownY, CntlTRY, cardY,
-			cntlBRY, cntlBLY, playY, GerroshY;
+	static int startY = 830, CntlTRY = 360, cardY = 450,
+			CntlBRY = 720, CntlBLY = CntlBRY, playY = 900, GerroshY = 275, HeroDiffY = 237;
 	static int[] sizes = new int[4]; //left top right bottom
 	static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	
@@ -45,9 +45,9 @@ public class AutoClicker {
 			System.out.println("Searching for Heartstone window");
 			sizes = FindScreenSize();
 			ratio();
-			TR = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(360,xy.y)).getRGB();
-			BR = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(720,xy.y)).getRGB();
-			BL = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(720,xy.y)).getRGB();
+			TR = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(CntlTRY,xy.y)).getRGB();
+			BR = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(CntlBRY,xy.y)).getRGB();
+			BL = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(CntlBLY,xy.y)).getRGB();
 			System.out.println("\nHow many wins are we in?");
 			try {
 				counter = sc.nextInt();
@@ -57,9 +57,9 @@ public class AutoClicker {
 			sc.close();
 
 			while(true) {
-				c1 = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(360,xy.y));
-				c2 = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(720,xy.y));
-				c3 = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(720,xy.y));
+				c1 = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(CntlTRY,xy.y));
+				c2 = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(CntlBRY,xy.y));
+				c3 = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(CntlBLY,xy.y));
 				if(colorchecker()) {
 					Thread.sleep(1000);
 					switch(counter) {
@@ -103,14 +103,14 @@ public class AutoClicker {
 
 	//Picks a random set of 3 normal cards to add to the deck.
 	private static void clickonce(Robot BeepBoop) throws Exception {
-		clickanywhere(BeepBoop, cardX + Randomizer(gapRightX), 450);
+		clickanywhere(BeepBoop, cardX + Randomizer(gapRightX), cardY);
 		Thread.sleep(1500);
-		clickanywhere(BeepBoop, calc(1125, xy.x), calc(830, xy.y));
+		clickanywhere(BeepBoop, calc(startX, xy.x), calc(startY, xy.y));
 	}
 
 	//Picks a random dungeon card to add to the deck.
 	private static void clickmultiple(Robot BeepBoop) throws Exception {
-		clickanywhere(BeepBoop, cardX + Randomizer(gapRightX), 450);
+		clickanywhere(BeepBoop, cardX + Randomizer(gapRightX), cardY);
 		Thread.sleep(1500);
 	}
 
@@ -123,9 +123,9 @@ public class AutoClicker {
 
 	//Calls clickanywhere to navigating picking a hero.
 	public static void clickok(Robot BeepBoop) throws Exception {
-		clickanywhere(BeepBoop, calc(startX, xy.x), calc(830, xy.y));
-		clickanywhere(BeepBoop, calc(GerroshX,xy.x) + Randomizer(calc(HeroDiffX,xy.x)), calc(275,xy.y) + Randomizer(calc(237,xy.y)));
-		clickanywhere(BeepBoop, calc(playX,xy.x), calc(900,xy.y));
+		clickanywhere(BeepBoop, calc(startX, xy.x), calc(startY, xy.y));
+		clickanywhere(BeepBoop, calc(GerroshX,xy.x) + Randomizer(calc(HeroDiffX,xy.x)), calc(GerroshY,xy.y) + Randomizer(calc(HeroDiffY,xy.y)));
+		clickanywhere(BeepBoop, calc(playX,xy.x), calc(playY,xy.y));
 	}
 
 	//Return a random integer from 1 to 3. Used for picking heroes and cards.
