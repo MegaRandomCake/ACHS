@@ -9,12 +9,17 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class AutoClicker {
-
+	enum xy {x,y};
 	static Color c1, c2, c3;
 	static int TR = -15265269, BR = -14412786, BL = -10011369;
+	static int startX = 984, gapRightX = 275, CntlTRX = 1120, cardX = 481,
+			CntlBRX = CntlTRX, cntlBLX = 560, playX = 1225, GerroshX = 416, HeroDiffX = 219;
+	static int startY, gapRightY, gapDownY, CntlTRY, cardY,
+			cntlBRY, cntlBLY, playY, GerroshY;
 	static int[] sizes = new int[4]; //left top right bottom
 	static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
+	
+	//Yes, main should never ever throw Exception. No, I don't care enough to fix it atm.
 	public static void main(String[] args) throws Exception {
 
 		String line;
@@ -34,15 +39,15 @@ public class AutoClicker {
 		}
 
 		input.close();
-
+		
 		if(pidInfo.contains("Hearthstone.exe"))
 		{
 			System.out.println("Searching for Heartstone window");
 			sizes = FindScreenSize();
 			ratio();
-			TR = BeepBoop.getPixelColor(calc(1280,'x'),calc(360,'y')).getRGB();
-			BR = BeepBoop.getPixelColor(calc(1280,'x'),calc(720,'y')).getRGB();
-			BL = BeepBoop.getPixelColor(calc(640,'x'),calc(720,'y')).getRGB();
+			TR = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(360,xy.y)).getRGB();
+			BR = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(720,xy.y)).getRGB();
+			BL = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(720,xy.y)).getRGB();
 			System.out.println("\nHow many wins are we in?");
 			try {
 				counter = sc.nextInt();
@@ -52,9 +57,9 @@ public class AutoClicker {
 			sc.close();
 
 			while(true) {
-				c1 = BeepBoop.getPixelColor(calc(1280,'x'),calc(360,'y'));
-				c2 = BeepBoop.getPixelColor(calc(1280,'x'),calc(720,'y'));
-				c3 = BeepBoop.getPixelColor(calc(640,'x'),calc(720,'y'));
+				c1 = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(360,xy.y));
+				c2 = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(720,xy.y));
+				c3 = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(720,xy.y));
 				if(colorchecker()) {
 					Thread.sleep(1000);
 					switch(counter) {
@@ -98,14 +103,14 @@ public class AutoClicker {
 
 	//Picks a random set of 3 normal cards to add to the deck.
 	private static void clickonce(Robot BeepBoop) throws Exception {
-		clickanywhere(BeepBoop, 550 + Randomizer(275), 450);
+		clickanywhere(BeepBoop, cardX + Randomizer(gapRightX), 450);
 		Thread.sleep(1500);
-		clickanywhere(BeepBoop, calc(1125, 'x'), calc(830, 'y'));
+		clickanywhere(BeepBoop, calc(1125, xy.x), calc(830, xy.y));
 	}
 
 	//Picks a random dungeon card to add to the deck.
 	private static void clickmultiple(Robot BeepBoop) throws Exception {
-		clickanywhere(BeepBoop, 550 + Randomizer(275), 450);
+		clickanywhere(BeepBoop, cardX + Randomizer(gapRightX), 450);
 		Thread.sleep(1500);
 	}
 
@@ -118,9 +123,9 @@ public class AutoClicker {
 
 	//Calls clickanywhere to navigating picking a hero.
 	public static void clickok(Robot BeepBoop) throws Exception {
-		clickanywhere(BeepBoop, calc(1125, 'x'), calc(830, 'y'));
-		clickanywhere(BeepBoop, calc(475,'x') + Randomizer(calc(250,'x')), calc(275,'y') + Randomizer(calc(237,'y')));
-		clickanywhere(BeepBoop, calc(1400,'x'), calc(900,'y'));
+		clickanywhere(BeepBoop, calc(startX, xy.x), calc(830, xy.y));
+		clickanywhere(BeepBoop, calc(GerroshX,xy.x) + Randomizer(calc(HeroDiffX,xy.x)), calc(275,xy.y) + Randomizer(calc(237,xy.y)));
+		clickanywhere(BeepBoop, calc(playX,xy.x), calc(900,xy.y));
 	}
 
 	//Return a random integer from 1 to 3. Used for picking heroes and cards.
@@ -128,10 +133,10 @@ public class AutoClicker {
 		return number * (int) (Math.random() * 2 + 1);
 	}
 	
-	
-	public static int calc(int number, char c) {
-		if(c == 'x') {
-			return sizes[0] + ((number*(sizes[2]-sizes[0]))/1920);
+	//Find the pixel by scaling from 1440:1080 to the current 4:3 in sizes[].
+	public static int calc(int number, xy a) {
+		if(a == xy.x) {
+			return sizes[0] + ((number*(sizes[2]-sizes[0]))/1440);
 		}
 		else {
 			return sizes[1] + ((number*(sizes[3]-sizes[1]))/1080);
