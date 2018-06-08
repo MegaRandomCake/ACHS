@@ -1,7 +1,9 @@
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -15,18 +17,25 @@ public class AutoClicker {
 	static int startY = 830, CntlTRY = 360, cardY = 450,
 			CntlBRY = 720, CntlBLY = CntlBRY, playY = 900, GerroshY = 275, HeroDiffY = 237;
 	static int[] sizes = new int[4]; //left top right bottom, topright is (0,0).
-	
-	//Yes, main should never ever throw Exception. No, I don't care enough to fix it atm.
-	public static void main(String[] args) throws Exception {
+
+	public static void main(String[] args) {
 
 		String line = "", pidInfo ="";
-		Robot BeepBoop = new Robot();
+		Robot BeepBoop;
+		try {
+			BeepBoop = new Robot();
+		} catch (AWTException e1) {
+			BeepBoop = null;
+		}
 
-		int counter = 0;
+		
 
 		Scanner sc = new Scanner(System.in);
+
+		Process process;
+		try {
+			process = Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
 		
-		Process process = Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
 
 		BufferedReader input =  new BufferedReader(new InputStreamReader(process.getInputStream()));
 
@@ -36,8 +45,13 @@ public class AutoClicker {
 
 		input.close();
 		
-		if(pidInfo.contains("Hearthstone.exe"))
+		} catch (IOException e1) {
+			pidInfo = "";
+		}
+
+		if(pidInfo.contains("Hearthstone.exe") && BeepBoop != null)
 		{
+			int counter = 0;
 			System.out.println("Searching for Heartstone window");
 			sizes = FindScreenSize();
 			ratio();
@@ -57,7 +71,7 @@ public class AutoClicker {
 				c2 = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(CntlBRY,xy.y));
 				c3 = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(CntlBLY,xy.y));
 				if(colorchecker()) {
-					Thread.sleep(1000);
+					sleeper(1000);
 					switch(counter) {
 					case 0:
 						clickok(BeepBoop);
@@ -72,7 +86,7 @@ public class AutoClicker {
 					default: counter = 0;
 					}
 				}
-				Thread.sleep(4500);
+				sleeper(4500);
 			}
 		}
 		else {
@@ -81,44 +95,44 @@ public class AutoClicker {
 		}
 
 	}
-	
+
 	//If the ratio of Hearthstone is not 4:3 make it that, because anything between 16:9 and 4:3 is the same as 4:3 but with noise in the sides.
 	private static void ratio() {
 		int length = sizes[2]-sizes[0];
 		int height = (sizes[1]-sizes[3])/3;
 		int goal = height * 4;
-		
+
 		if(height == goal) {
 			return;
 		}
-		
+
 		goal = (length - goal)/2;
 		sizes[0] += goal;
 		sizes[2] -= goal;
 	}
 
 	//Picks a random set of 3 normal cards to add to the deck.
-	private static void clickonce(Robot BeepBoop) throws Exception {
+	private static void clickonce(Robot BeepBoop) {
 		clickanywhere(BeepBoop, cardX + Randomizer(gapRightX), cardY);
-		Thread.sleep(1500);
+		sleeper(1500);
 		clickanywhere(BeepBoop, calc(startX, xy.x), calc(startY, xy.y));
 	}
 
 	//Picks a random dungeon card to add to the deck.
-	private static void clickmultiple(Robot BeepBoop) throws Exception {
+	private static void clickmultiple(Robot BeepBoop) {
 		clickanywhere(BeepBoop, cardX + Randomizer(gapRightX), cardY);
-		Thread.sleep(1500);
+		sleeper(1500);
 	}
 
 	//Check if we are on the main menu of dungeon run.
 	public static boolean colorchecker() {
 		System.out.println(c1.getRGB() + " " + c2.getRGB() + " " + c3.getRGB() + " " + TR + " " + BR + " " + BL);
 		return c1.getRGB() == TR && c2.getRGB() == BR && c3.getRGB() == BL;
-		
+
 	}
 
 	//Calls clickanywhere to navigating picking a hero.
-	public static void clickok(Robot BeepBoop) throws Exception {
+	public static void clickok(Robot BeepBoop) {
 		clickanywhere(BeepBoop, calc(startX, xy.x), calc(startY, xy.y));
 		clickanywhere(BeepBoop, calc(GerroshX,xy.x) + Randomizer(calc(HeroDiffX,xy.x)), calc(GerroshY,xy.y) + Randomizer(calc(HeroDiffY,xy.y)));
 		clickanywhere(BeepBoop, calc(playX,xy.x), calc(playY,xy.y));
@@ -128,7 +142,7 @@ public class AutoClicker {
 	public static int Randomizer(int number) {
 		return number * (int) (Math.random() * 2 + 1);
 	}
-	
+
 	//Find the pixel by scaling from 1440:1080 to the current 4:3 in sizes[].
 	public static int calc(int number, xy a) {
 		if(a == xy.x) {
@@ -140,18 +154,34 @@ public class AutoClicker {
 
 	}
 
-	//Moves, click and releases the mouse, then makes the thread sleep.
-	public static void clickanywhere(Robot BeepBoop, int x, int y) throws Exception {
+	//Moves, click and releases the mouse, then calls the method 'sleeper'.
+	public static void clickanywhere(Robot BeepBoop, int x, int y) {
 		BeepBoop.mouseMove(x, y);
 		BeepBoop.mousePress(InputEvent.BUTTON1_MASK);
 		BeepBoop.mouseRelease(InputEvent.BUTTON1_MASK);
-		Thread.sleep(1500);
+		sleeper(1500);
+	}
+	
+	//Makes the thread sleep.
+	public static void sleeper(int i) {
+		try {
+			Thread.sleep(i);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}	
 	}
 
-	public static int[] FindScreenSize() throws Exception {
+	//Returns the screensize of Hearthstone as an int[4].
+	public static int[] FindScreenSize()  {
 		//TODO replace this with reading from the option.txt file, where everything useful is stored.
 		GetWindowRect GWR = new GetWindowRect();
-		return GWR.go("Hearthstone");
+		try {
+			return GWR.go("Hearthstone");
+		} catch (Exception e) {
+			System.out.println("Hearthstone has been closed, please reopen Hearthstone and restart this application.");
+			System.exit(1);
+		}
+		return null;
 	}
 
 }
