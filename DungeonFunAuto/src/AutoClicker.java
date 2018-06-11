@@ -1,10 +1,6 @@
-import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -12,49 +8,24 @@ public class AutoClicker {
 	enum xy {x,y};
 	static Color c1, c2, c3;
 	static int TR = -15265269, BR = -14412786, BL = -10011369;
-	static int startX = 890, gapRightX = 310, CntlTRX = 1120, cardX = 240,
+	static int startX = 890, gapRightX = 270, CntlTRX = 1120, cardX = 250,
 			CntlBRX = CntlTRX, cntlBLX = 560, playX = 1150, GerroshX = 250, HeroDiffX = 219;
-	static int startY = 830, CntlTRY = 360, cardY = 450,
+	static int startY = 830, CntlTRY = 360, cardY = 505,
 			CntlBRY = 720, CntlBLY = CntlBRY, playY = 900, GerroshY = 275, HeroDiffY = 237;
-	static int[] sizes = new int[4]; //left top right bottom, topright is (0,0).
+	static int[] sizes = new int[4]; //left top right bottom, topleft is (0,0).
 
 	public static void main(String[] args) {
-
-		String line = "", pidInfo ="";
-		Robot BeepBoop;
-		try {
-			BeepBoop = new Robot();
-		} catch (AWTException e1) {
-			BeepBoop = null;
-		}
-
-		
-
-		Scanner sc = new Scanner(System.in);
-
-		Process process;
-		try {
-			process = Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
-		
-
-		BufferedReader input =  new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-		while ((line = input.readLine()) != null) {
-			pidInfo+=line; 
-		}
-
-		input.close();
-		
-		} catch (IOException e1) {
-			pidInfo = "";
-		}
-
-		if(pidInfo.contains("Hearthstone.exe") && BeepBoop != null)
-		{
+		Robot BeepBoop = Init.IsHearthstoneOpen();
+		if(BeepBoop != null) {
+			Scanner sc = new Scanner(System.in);
 			int counter = 0;
 			System.out.println("Searching for Heartstone window");
-			sizes = FindScreenSize();
-			ratio();
+			try {
+				sizes = GetWindowSize.go("Hearthstone");
+			} catch (Exception e) {
+				System.out.println("An error orcurred ");
+				System.exit(1);
+			}
 			TR = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(CntlTRY,xy.y)).getRGB();
 			BR = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(CntlBRY,xy.y)).getRGB();
 			BL = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(CntlBLY,xy.y)).getRGB();
@@ -90,25 +61,9 @@ public class AutoClicker {
 			}
 		}
 		else {
-			sc.close();
 			System.exit(0);
 		}
 
-	}
-
-	//If the ratio of Hearthstone is not 4:3 make it that, because anything between 16:9 and 4:3 is the same as 4:3 but with noise in the sides.
-	private static void ratio() {
-		int length = sizes[2]-sizes[0];
-		int height = (sizes[1]-sizes[3])/3;
-		int goal = height * 4;
-
-		if(height == goal) {
-			return;
-		}
-
-		goal = (length - goal)/2;
-		sizes[0] += goal;
-		sizes[2] -= goal;
 	}
 
 	//Picks a random set of 3 normal cards to add to the deck.
@@ -134,13 +89,13 @@ public class AutoClicker {
 	//Calls clickanywhere to navigating picking a hero.
 	public static void clickok(Robot BeepBoop) {
 		clickanywhere(BeepBoop, calc(startX, xy.x), calc(startY, xy.y));
-		clickanywhere(BeepBoop, calc(GerroshX,xy.x) + Randomizer(calc(HeroDiffX,xy.x)), calc(GerroshY,xy.y) + Randomizer(calc(HeroDiffY,xy.y)));
+		clickanywhere(BeepBoop, calc(GerroshX,xy.x) + Randomizer(calc(HeroDiffX,xy.x)-sizes[0]), calc(GerroshY,xy.y) + Randomizer(calc(HeroDiffY,xy.y)-sizes[1]));
 		clickanywhere(BeepBoop, calc(playX,xy.x), calc(playY,xy.y));
 	}
 
-	//Return a random integer from 1 to 3. Used for picking heroes and cards.
+	//Return a random integer from 0 to 2. Used for picking heroes and cards.
 	public static int Randomizer(int number) {
-		return number * (int) (Math.random() * 2 + 1);
+		return number * (int) (Math.random() * 3);
 	}
 
 	//Find the pixel by scaling from 1440:1080 to the current 4:3 in sizes[].
@@ -170,18 +125,4 @@ public class AutoClicker {
 			Thread.currentThread().interrupt();
 		}	
 	}
-
-	//Returns the screensize of Hearthstone as an int[4].
-	public static int[] FindScreenSize()  {
-		//TODO replace this with reading from the option.txt file, where everything useful is stored.
-		GetWindowRect GWR = new GetWindowRect();
-		try {
-			return GWR.go("Hearthstone");
-		} catch (Exception e) {
-			System.out.println("Hearthstone has been closed, please reopen Hearthstone and restart this application.");
-			System.exit(1);
-		}
-		return null;
-	}
-
 }
