@@ -1,69 +1,103 @@
 import java.awt.Color;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class AutoClicker {
 	enum xy {x,y};
 	static Color c1, c2, c3;
-	static int TR = -15265269, BR = -14412786, BL = -10011369;
+	static int TR = -15265269, BR = -14412786, BL = -10011369, counter = 0;
 	static int startX = 890, gapRightX = 270, CntlTRX = 1120, cardX = 250,
 			CntlBRX = CntlTRX, cntlBLX = 560, playX = 1150, GerroshX = 250, HeroDiffX = 219;
 	static int startY = 830, CntlTRY = 360, cardY = 505,
 			CntlBRY = 720, CntlBLY = CntlBRY, playY = 900, GerroshY = 275, HeroDiffY = 237;
 	static int[] sizes = new int[4]; //left top right bottom, topleft is (0,0).
 
-	public static void main(String[] args) {
+	public void Auto() {
 		Robot BeepBoop = Init.IsHearthstoneOpen();
 		if(BeepBoop != null) {
-			Scanner sc = new Scanner(System.in);
-			int counter = 0;
+			SomeWatchFile SWF = null;
+			try {
+				SWF = new SomeWatchFile();
+			} catch (IOException e) {
+			}
+
+
 			System.out.println("Searching for Heartstone window");
 			try {
 				sizes = GetWindowSize.go("Hearthstone");
 			} catch (Exception e) {
-				System.out.println("An error orcurred ");
-				System.exit(1);
+				System.out.println("An error orcurred.");
+				System.exit(2);
 			}
-			TR = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(CntlTRY,xy.y)).getRGB();
-			BR = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(CntlBRY,xy.y)).getRGB();
-			BL = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(CntlBLY,xy.y)).getRGB();
+
+			Scanner sc = new Scanner(System.in);
 			System.out.println("\nHow many wins are we in?");
 			try {
 				counter = sc.nextInt();
 			} catch(InputMismatchException e) {
 				System.out.println("Ugyldigt input, starter ny dungeon run");
+				counter = 0;
 			}
 			sc.close();
 
+			boolean wherearewe = false;
 			while(true) {
-				c1 = BeepBoop.getPixelColor(calc(CntlTRX,xy.x),calc(CntlTRY,xy.y));
-				c2 = BeepBoop.getPixelColor(calc(CntlBRX,xy.x),calc(CntlBRY,xy.y));
-				c3 = BeepBoop.getPixelColor(calc(cntlBLX,xy.x),calc(CntlBLY,xy.y));
-				if(colorchecker()) {
-					sleeper(1000);
-					switch(counter) {
-					case 0:
-						clickok(BeepBoop);
-						counter++;
+				try {
+					wherearewe = SWF.EndOfMatch();
+					SWF.StartOfMatch();
+				} catch (IOException e) {
+					wherearewe = false;
+				}
+				
+				if(wherearewe == true) {
+					wherearewe = false;
+					pickerswitch(BeepBoop);
+				}
+				
+
+				if(counter == 8) {
+					System.out.println("Press 0 to play again, or anything else to exit");
+					int nextgame = 1;
+					try {
+						nextgame = sc.nextInt();
+					}catch(InputMismatchException e){
+						nextgame = 1;
+					}
+					if(nextgame == 0) {
+						continue;
+					}
+					else {
 						break;
-					case 1: case 3: case 5: case 7:
-						clickmultiple(BeepBoop);
-					case 2: case 4: case 6:
-						clickonce(BeepBoop);
-						counter++;
-						break;
-					default: counter = 0;
 					}
 				}
-				sleeper(4500);
 			}
 		}
 		else {
-			System.exit(0);
+			System.exit(1);
 		}
 
+	}
+
+
+	//Manages if we need to pick a card, bundle or hero.
+	private static void pickerswitch(Robot BeepBoop) {
+		sleeper(1000);
+		switch(counter) {
+		case 0:
+			clickok(BeepBoop);
+			counter++;
+			break;
+		case 1: case 3: case 5: case 7:
+			clickmultiple(BeepBoop);
+		case 2: case 4: case 6:
+			clickonce(BeepBoop);
+			counter++;
+			break;
+		default: break;
+		}
 	}
 
 	//Picks a random set of 3 normal cards to add to the deck.
@@ -116,7 +150,7 @@ public class AutoClicker {
 		BeepBoop.mouseRelease(InputEvent.BUTTON1_MASK);
 		sleeper(1500);
 	}
-	
+
 	//Makes the thread sleep.
 	public static void sleeper(int i) {
 		try {
