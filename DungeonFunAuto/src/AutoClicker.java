@@ -45,33 +45,20 @@ public class AutoClicker {
 
 			boolean wherearewe = false;
 			while(true) {
-				try {
-					wherearewe = SWF.EndOfMatch();
-					SWF.StartOfMatch();
-				} catch (IOException e) {
-					wherearewe = false;
-				}
+				wherearewe = SWF.EndOfMatch();
 				
 				if(wherearewe == true) {
 					wherearewe = false;
 					pickerswitch(BeepBoop);
+					sleeper(1000);
+					while(SWF.StartOfMatch()) {
+						counter--;
+						pickerswitch(BeepBoop);
+					}
 				}
 				
-
 				if(counter == 8) {
-					System.out.println("Press 0 to play again, or anything else to exit");
-					int nextgame = 1;
-					try {
-						nextgame = sc.nextInt();
-					}catch(InputMismatchException e){
-						nextgame = 1;
-					}
-					if(nextgame == 0) {
-						continue;
-					}
-					else {
-						break;
-					}
+					gameender();
 				}
 			}
 		}
@@ -80,7 +67,24 @@ public class AutoClicker {
 		}
 
 	}
-
+	
+	private static void gameender() {
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Press 0 to play again, or anything else to exit");
+		int nextgame = 1;
+		try {
+			nextgame = sc.nextInt();
+		}catch(InputMismatchException e){
+			nextgame = 1;
+		}
+		sc.close();
+		if(nextgame == 0) {
+			return;
+		}
+		else {
+			System.exit(0);
+		}
+	}
 
 	//Manages if we need to pick a card, bundle or hero.
 	private static void pickerswitch(Robot BeepBoop) {
